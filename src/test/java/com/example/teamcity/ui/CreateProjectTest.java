@@ -24,12 +24,6 @@ public class CreateProjectTest extends BaseUiTest {
                 .createForm(REPO_URL)
                 .setupProject(testData.getProject().getName(), testData.getBuildType().getName());
 
-        step("Open `Create Project Page` (http://localhost:8111/admin/createObjectMenu.html)");
-        step("Send all project parameters (repository URL)");
-        step("Click `Proceed`");
-        step("Fix Project Name and Build Type name values");
-        step("Click `Proceed`");
-
         // проверка состояния API
         // (корректность отправки данных с UI на API)
         var createdProject = superUserCheckRequests.<Project>getRequest(Endpoint.PROJECTS).read("name:" + testData.getProject().getName());
