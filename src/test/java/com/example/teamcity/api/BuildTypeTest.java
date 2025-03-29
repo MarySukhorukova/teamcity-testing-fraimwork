@@ -90,12 +90,10 @@ public class BuildTypeTest extends BaseApiTest {
 
         new RolesRequests(Specifications.superUserSpec())
                 .assignProjectRole(user2.getUsername(), "PROJECT_ADMIN", project2.getId());
-
         testData.getBuildType().setProject(project1);
         testData.getBuildType().getProject().setLocator(null);
         BuildType unauthBuildType = TestDataGenerator.generate(BuildType.class);
         unauthBuildType.setProject(project1);
-
         Response response = new UncheckedBase(Specifications.authSpec(user2), BUILD_TYPES)
                 .create(unauthBuildType);
 
