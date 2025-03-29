@@ -9,7 +9,7 @@ import static com.codeborne.selenide.Selenide.$;
 public class ProjectPage extends BasePage {
     private static final String PROJECT_URL = "/project/%s";
 
-    public SelenideElement title = $("span[class*='ProjectPageHeader__title']").shouldBe(Condition.visible, BASE_WAITING);
+    public SelenideElement title = $("span[class*='ProjectPageHeader__title']");
     private static final SelenideElement configurationsTable = $("#configurations");
 
     public static ProjectPage open(String projectId) {

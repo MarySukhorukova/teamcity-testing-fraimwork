@@ -8,6 +8,7 @@ import com.example.teamcity.api.ui.pages.ProjectsPage;
 import com.example.teamcity.api.ui.pages.admin.CreateProjectPage;
 import org.testng.annotations.Test;
 
+import static com.example.teamcity.api.ui.pages.BasePage.BASE_WAITING;
 import static io.qameta.allure.Allure.step;
 
 @Test(groups = {"Regression"})
@@ -32,11 +33,13 @@ public class CreateProjectTest extends BaseUiTest {
         ProjectPage.open(createdProject.getId())
                 .title.shouldHave(Condition.exactText(testData.getProject().getName()));
 
-        //var foundProjects = ProjectsPage.open()
-                //.getProjects().stream()
-                //.anyMatch(project -> project.getName().text().equals(testData.getProject().getName()));
+        step("Find project in projects list");
+        var foundProjects = ProjectsPage.open()
+                .getProjects().stream()
+                .anyMatch(project -> project.getName().text().equals(testData.getProject().getName()));
 
-        //softy.assertTrue(foundProjects);
+        step("Check project in projects list");
+        softy.assertTrue(foundProjects);
     }
 
     @Test(description = "User should not be able to craete project without name", groups = {"Negative"})
