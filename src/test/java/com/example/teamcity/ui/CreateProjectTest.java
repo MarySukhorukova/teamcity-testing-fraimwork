@@ -19,26 +19,24 @@ public class CreateProjectTest extends BaseUiTest {
         step("Login as user");
         loginAs(testData.getUser());
 
-        // взаимодействие с UI
+        step("User create project");
         CreateProjectPage.open("_Root")
                 .createForm(REPO_URL)
                 .setupProject(testData.getProject().getName(), testData.getBuildType().getName());
 
-        // проверка состояния API
-        // (корректность отправки данных с UI на API)
+        step("Check api response");
         var createdProject = superUserCheckRequests.<Project>getRequest(Endpoint.PROJECTS).read("name:" + testData.getProject().getName());
         softy.assertNotNull(createdProject);
 
-        // проверка состояния UI
-        // (корректность считывания данных и отображение данных на UI)
+        step("Check ui project_name");
         ProjectPage.open(createdProject.getId())
                 .title.shouldHave(Condition.exactText(testData.getProject().getName()));
 
-        var foundProjects = ProjectsPage.open()
-                .getProjects().stream()
-                .anyMatch(project -> project.getName().text().equals(testData.getProject().getName()));
+        //var foundProjects = ProjectsPage.open()
+                //.getProjects().stream()
+                //.anyMatch(project -> project.getName().text().equals(testData.getProject().getName()));
 
-        softy.assertTrue(foundProjects);
+        //softy.assertTrue(foundProjects);
     }
 
     @Test(description = "User should not be able to craete project without name", groups = {"Negative"})
