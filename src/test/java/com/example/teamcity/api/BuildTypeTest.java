@@ -1,13 +1,16 @@
 package com.example.teamcity.api;
 
+import com.example.teamcity.api.generators.RoleGenerator;
 import com.example.teamcity.api.generators.TestDataGenerator;
 import com.example.teamcity.api.models.BuildType;
 import com.example.teamcity.api.models.Project;
 import com.example.teamcity.api.models.User;
 import com.example.teamcity.api.requests.CheckedRequests;
 import com.example.teamcity.api.requests.RolesRequests;
+import com.example.teamcity.api.requests.UserProjectManager;
 import com.example.teamcity.api.requests.unchecked.UncheckedBase;
 import com.example.teamcity.api.spec.Specifications;
+import com.example.teamcity.asserts.AssertHelpers;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
@@ -30,8 +33,7 @@ public class BuildTypeTest extends BaseApiTest {
         userCheckRequests.getRequest(BUILD_TYPES).create(testData.getBuildType());
 
         var createdBuildType = userCheckRequests.<BuildType>getRequest(BUILD_TYPES).read("id:" + testData.getBuildType().getId());
-
-        softy.assertEquals(testData.getBuildType().getName(), createdBuildType.getName(), "Build type name is not correct");
+        AssertHelpers.assertBuildTypeEquals(softy, testData.getBuildType(), createdBuildType);
     }
 
     @Test(description = "User should not be able to create two build types with the same id", groups = {"Negative", "CRUD"})
@@ -53,15 +55,11 @@ public class BuildTypeTest extends BaseApiTest {
 
     @Test(description = "Project admin should be able to create build type for their project", groups = {"Positive", "Roles"})
     public void projectAdminCreatesBuildTypeTest() {
-        superUserCheckRequests.getRequest(USERS).create(testData.getUser());
-
-        var userCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
-        userCheckRequests.<Project>getRequest(PROJECTS).create(testData.getProject());
-
-        new RolesRequests(Specifications.superUserSpec())
-                .assignProjectRole(testData.getUser().getUsername(), "PROJECT_ADMIN", testData.getProject().getId());
+        UserProjectManager.createUserAndProject(testData.getUser(), testData.getProject(), superUserCheckRequests);
+        RoleGenerator.generateProjectAdmin(testData.getProject().getId(), testData.getUser().getUsername());
 
         testData.getBuildType().getProject().setLocator(null);
+        var userCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
         userCheckRequests.getRequest(BUILD_TYPES).create(testData.getBuildType());
 
         Response response = new UncheckedBase(Specifications.authSpec(testData.getUser()), BUILD_TYPES)
@@ -77,19 +75,11 @@ public class BuildTypeTest extends BaseApiTest {
         Project project1 = TestDataGenerator.generate(Project.class);
         Project project2 = TestDataGenerator.generate(Project.class);
 
-        superUserCheckRequests.getRequest(USERS).create(user1);
-        var user1Requests = new CheckedRequests(Specifications.authSpec(user1));
-        user1Requests.<Project>getRequest(PROJECTS).create(project1);
+        UserProjectManager.createUserAndProject(user1, project1, superUserCheckRequests);
+        RoleGenerator.generateProjectAdmin(project1.getId(), user1.getUsername());
 
-        new RolesRequests(Specifications.superUserSpec())
-                .assignProjectRole(user1.getUsername(), "PROJECT_ADMIN", project1.getId());
-
-        superUserCheckRequests.getRequest(USERS).create(user2);
-        var user2Requests = new CheckedRequests(Specifications.authSpec(user2));
-        user2Requests.<Project>getRequest(PROJECTS).create(project2);
-
-        new RolesRequests(Specifications.superUserSpec())
-                .assignProjectRole(user2.getUsername(), "PROJECT_ADMIN", project2.getId());
+        UserProjectManager.createUserAndProject(user2, project2, superUserCheckRequests);
+        RoleGenerator.generateProjectAdmin(project2.getId(), user2.getUsername());
 
         testData.getBuildType().setProject(project1);
         testData.getBuildType().getProject().setLocator(null);
